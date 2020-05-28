@@ -21,5 +21,12 @@ class Firebase {
         //declaro una propiedad auth, yo la defino como quiero
         this.auth = app.auth();
     }
+
+
+    estaIniciado() {
+        return new Promise(resolve => {
+            this.auth.onAuthStateChanged(resolve)
+        })
+    }
 }
 export default Firebase;
