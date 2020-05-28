@@ -1,5 +1,6 @@
 import app from 'firebase/app';
 import 'firebase/firestore';
+import 'firebase/auth';
 const config = {
     apiKey: "AIzaSyD15XmzDQPBuhzU-10UX4Iwzso3UKTqslQ",
     authDomain: "gestiones-8f421.firebaseapp.com",
@@ -17,6 +18,8 @@ class Firebase {
         //como parametro el pasamos la configuracion de la app web que creamos
         app.initializeApp(config);
         this.db = app.firestore();
+        //declaro una propiedad auth, yo la defino como quiero
+        this.auth = app.auth();
     }
 }
 export default Firebase;

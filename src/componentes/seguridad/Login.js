@@ -31,6 +31,17 @@ class Login extends Component {
         }
     }
 
+    static getDerivedStateFromProps(nextProps, prevState) {
+        //si la variable firebase base esta ingresando como un props dentro de mi componente entonces
+        //es decir si son identicas no haga nada
+        if (nextProps.firebase === prevState.firebase) {
+            return null
+        }
+        return {
+            firebase: nextProps.firebase
+        }
+    }
+
     onChange = e => {
         //capturamos el valor actual del state del usurio
         let usuario = Object.assign({}, this.state.usuario)
@@ -38,6 +49,24 @@ class Login extends Component {
         this.setState({
             usuario: usuario
         })
+    }
+
+    login = e => {
+        e.preventDefault()//para que no haga el envio total
+        //defino las constantes del state
+        const { firebase, usuario } = this.state
+        //llamo a firebase para hacer el metodo de autenticacion
+        firebase.auth
+            .signInWithEmailAndPassword(usuario.email, usuario.password)//metodo de firebase para ingresar con email y password
+            .then(auth => {
+                console.log("Exito logeo: ", auth);
+                //si accede quiero que me lleve a una pagina de listaInmueble
+                //para eso debo hacer un redirect
+                this.props.history.push('/')//este es el path definido en App.js
+            })
+            .catch(error => {
+                console.log("Error Logeo:", error);
+            })
     }
 
 
@@ -77,6 +106,7 @@ class Login extends Component {
                             fullWidth
                             variant="contained"//le da un color de fondo
                             color="primary"
+                            onClick={this.login}
                         >
                             Enviar
                         </Button>

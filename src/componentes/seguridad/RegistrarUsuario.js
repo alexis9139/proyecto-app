@@ -70,18 +70,36 @@ class RegistrarUsuario extends Component {
         console.log('imprimir objeto usuario del state', this.state.usuario)
         //declaramos una const que permita obtener el valor de usuario y el valor firebase
         const { usuario, firebase } = this.state;
-        //llamo al objeto firebase y lo uso para poder insertar datos
-        firebase.db
-            .collection("Users")
-            .add(usuario)
-            .then(usuarioAfter => {
-                console.log("Exito al insertar", usuarioAfter);
-                this.setState({
-                    usuario: usuarioInicial
-                })
+        //agrego un metodo para poder crear usuarios
+        firebase.auth
+            .createUserWithEmailAndPassword(usuario.email, usuario.password)
+            .then(auth => {//cuando de ok recien guardo
+
+                //creamos una constante que sera lo que mandaremos a la base de datos
+                const usuarioDB = {
+                    usuarioid: auth.user.uid,//auth.user.uid viene de firebase
+                    email: usuario.email,
+                    nombre: usuario.nombre,
+                    apellido: usuario.apellido
+                }
+
+                //llamo al objeto firebase y lo uso para poder insertar datos
+                firebase.db
+                    .collection("Users")
+                    .add(usuarioDB)
+                    .then(usuarioAfter => {
+                        console.log("Exito al insertar", usuarioAfter);
+                        this.props.history.push("/");
+                        // this.setState({
+                        //     usuario: usuarioInicial
+                        // })
+                    })
+                    .catch(error => {
+                        console.log("Error:", error);
+                    })
             })
             .catch(error => {
-                console.log("Error:", error);
+                console.log(error)
             })
     }
 
