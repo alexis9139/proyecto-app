@@ -1,4 +1,17 @@
-const sesionReducer = (state, action) => {//tendra el estado y la accion del reducer
+export const initialState = {
+    usuario: {
+        nombre: "",
+        apellido: "",
+        email: "",
+        telefono: "",
+        id: "",
+        foto: ""
+    },
+    autenticado: false
+}
+
+
+const sesionReducer = (state = initialState, action) => {//tendra el estado y la accion del reducer
     //acciones que podra ejecutar este reducer
     //el action es quien llama al reducer, el reducer esta esperando un action para poder trabajar
     switch (action.type) {
