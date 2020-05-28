@@ -1,6 +1,8 @@
 import React, { Component } from 'react'
 import { Container, Avatar, Typography, Grid, TextField, Button } from '@material-ui/core';
 import PermIdentityIcon from '@material-ui/icons/PermIdentity';
+import { compose } from 'recompose';
+import { consumerFirebase } from '../../server'
 const style = {
     paper: {
         marginTop: 8,
@@ -23,14 +25,26 @@ const style = {
     },
 }
 
-
-export default class RegistrarUsuario extends Component {
+class RegistrarUsuario extends Component {
     state = {
+        firebase: null,
         usuario: {
             nombre: '',
             apellido: '',
             email: '',
             password: ''
+        }
+    }
+
+    static getDerivedStateFromProps(nextProps, prepState) {
+        //si la siguiente propiedad firebase es identica al previoestado firebase  no ocurre nada
+        if (nextProps.firebase === prepState.firebase) {
+            return null;
+        }
+        return {
+            //si no es verdad necesito que ese valor que esta entrando se actualice dentro del estado de registrar usuario
+            //procedemos a cambiar el state del componente
+            firebase: nextProps.firebase
         }
     }
 
@@ -89,3 +103,5 @@ export default class RegistrarUsuario extends Component {
         )
     }
 }
+
+export default compose(consumerFirebase)(RegistrarUsuario);
