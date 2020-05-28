@@ -25,6 +25,13 @@ const style = {
     },
 }
 
+const usuarioInicial = {//sirve para limpiar cada una de esas variables
+    nombre: '',
+    apellido: '',
+    email: '',
+    password: ''
+}
+
 class RegistrarUsuario extends Component {
     state = {
         firebase: null,
@@ -61,7 +68,24 @@ class RegistrarUsuario extends Component {
     registrarUsuario = e => {
         e.preventDefault();//no quiero que haga el refresh otra vez
         console.log('imprimir objeto usuario del state', this.state.usuario)
+        //declaramos una const que permita obtener el valor de usuario y el valor firebase
+        const { usuario, firebase } = this.state;
+        //llamo al objeto firebase y lo uso para poder insertar datos
+        firebase.db
+            .collection("Users")
+            .add(usuario)
+            .then(usuarioAfter => {
+                console.log("Exito al insertar", usuarioAfter);
+                this.setState({
+                    usuario: usuarioInicial
+                })
+            })
+            .catch(error => {
+                console.log("Error:", error);
+            })
     }
+
+
     render() {
         return (
             <Container maxWidth="md">
@@ -81,13 +105,13 @@ class RegistrarUsuario extends Component {
                                 <TextField name="nombre" onChange={this.onChange} fullWidth value={this.state.usuario.nombre} label="Ingrese su nombre"></TextField>
                             </Grid>
                             <Grid item md={6} xs={12}>
-                                <TextField name="apellido" onChange={this.onChange} fullWidth label="Ingrese su apellido"></TextField>
+                                <TextField name="apellido" onChange={this.onChange} fullWidth value={this.state.usuario.apellido} label="Ingrese su apellido"></TextField>
                             </Grid>
                             <Grid item md={6} xs={12}>
-                                <TextField name="email" onChange={this.onChange} fullWidth label="Ingrese su email"></TextField>
+                                <TextField name="email" onChange={this.onChange} fullWidth value={this.state.usuario.email} label="Ingrese su email"></TextField>
                             </Grid>
                             <Grid item md={6} xs={12}>
-                                <TextField type="password" onChange={this.onChange} name="password" fullWidth label="Ingrese su password"></TextField>
+                                <TextField type="password" onChange={this.onChange} name="password" value={this.state.usuario.password} fullWidth label="Ingrese su password"></TextField>
                             </Grid>
                         </Grid>
                         <Grid container justify="center">
