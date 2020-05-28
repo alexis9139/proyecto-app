@@ -1,5 +1,5 @@
-import app from './firebase/app';
-
+import app from 'firebase/app';
+import 'firebase/firestore';
 const config = {
     apiKey: "AIzaSyD15XmzDQPBuhzU-10UX4Iwzso3UKTqslQ",
     authDomain: "gestiones-8f421.firebaseapp.com",
