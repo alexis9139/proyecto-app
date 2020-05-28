@@ -17,7 +17,7 @@ const sesionReducer = (state, action) => {//tendra el estado y la accion del red
         case "SALIR_SESION":
             return {
                 ...state,
-                usuario: action.sesion,
+                usuario: action.nuevoUsuario,
                 autenticado: action.autenticado
             };
         default:
