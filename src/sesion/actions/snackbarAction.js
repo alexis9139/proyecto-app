@@ -1,6 +1,6 @@
-export const openMensajePantalla = (dispatch, openMensaje) => {//open es un json,ahi dentro esta el estado y el mensaje
-    dispatch({//dispatch es el que llama al reducer
-        type: "OPEN_SNACKBAR",
-        openMensaje: openMensaje
+export const openMensajePantalla = (dispatch, openMensaje) => {
+    dispatch({//dispatch es el que llama a reducer
+        type: "OPEN_SNACKBAR",//tiene la action
+        openMensaje: openMensaje//pasamos el openMensaje a un openMensaje
     })
 }

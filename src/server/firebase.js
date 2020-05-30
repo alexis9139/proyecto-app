@@ -24,8 +24,8 @@ class Firebase {
 
 
     estaIniciado() {
-        return new Promise(resolve => {
-            this.auth.onAuthStateChanged(resolve)
+        return new Promise(resolve => {//se resolvera para cuando se haya iniciado la autenticacion
+            this.auth.onAuthStateChanged(resolve)//cambia el estado a true
         })
     }
 }

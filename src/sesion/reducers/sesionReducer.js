@@ -1,4 +1,4 @@
-export const initialState = {
+export const initialState = {//creamos un state particular para este reducer y lo pasamos en la linea 16
     usuario: {
         nombre: "",
         apellido: "",
@@ -9,33 +9,34 @@ export const initialState = {
     },
     autenticado: false
 }
-
-
-const sesionReducer = (state = initialState, action) => {//tendra el estado y la accion del reducer
-    //acciones que podra ejecutar este reducer
-    //el action es quien llama al reducer, el reducer esta esperando un action para poder trabajar
+//sesionReducer tendra dos parametros para trabajar
+//aqui definimos las acciones que podra ejecutar el reducer
+//el action es quien llama al reducer,el reducer esta esperando un action para poder trabajar
+//sesionAction.js-->iniciarSesion es lo que se metera en la variable action de la linea 16
+const sesionReducer = (state = initialState, action) => {//pasamos initialState
     switch (action.type) {
-        case "INICIAR_SESION"://cuando llame a mi action, debo indicarle el nombre "INICIAR_SESION"
-            return {
-                ...state,//tiene que contener el estado actual que tengo
-                usuario: action.sesion,//variable de initialState<-- indicamos la data que llevara
-                autenticado: action.autenticado//cambiamos del false a true
-            }
-        case "CAMBIAR_SESION":
-            return {
-                ...state,//cargo todos los datos por defecto de context provider
+        case "INICIAR_SESION"://esta es una accion, que se le indicara a action
+            return {//lo que retorna es un json
+                ...state,//estado actual que tengo
+                //el sesion se definira dentro del sesionAction.js--> sesion: usuarioDB,<-- linea 17
+                usuario: action.sesion,//cambio el valor de usuario, esta es la data que llevara usuario
+                autenticado: action.autenticado//cambio el estado
+            };
+        case "CAMBIAR_SESION"://otro action
+            return {//lo que retorna es un json
+                ...state,
                 usuario: action.nuevoUsuario,
                 autenticado: action.autenticado
-            }
+            };
         case "SALIR_SESION":
             return {
                 ...state,
                 usuario: action.nuevoUsuario,
                 autenticado: action.autenticado
             };
-        default:
+        default://siempre debe ir un default
             return state;
     }
 };
 
-export default sesionReducer
+export default sesionReducer;//exportamos el reducer

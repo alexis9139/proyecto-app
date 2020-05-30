@@ -1,31 +1,34 @@
-import React, { Component } from 'react'
-import { Container, Avatar, Typography, Grid, TextField, Button } from '@material-ui/core';
-import PermIdentityIcon from '@material-ui/icons/PermIdentity';
+import React, { Component } from 'react';
+import { Container, Typography, TextField, Avatar, Grid, Button } from '@material-ui/core';
+import LockOutLineIcon from '@material-ui/icons/LockOutlined';
 import { compose } from 'recompose';
-import { consumerFirebase } from '../../server'
+import { consumerFirebase } from '../../server';
+import { crearUsuario } from '../../sesion/actions/sesionAction';//importamos al metodo de la action
+import { openMensajePantalla } from '../../sesion/actions/snackbarAction'//para traer el popup
+import { StateContext } from '../../sesion/store';//traemos al contextProvider
+
 const style = {
     paper: {
         marginTop: 8,
-        display: "flex",//para que se ordenen uno tras otro
-        flexDirection: "column",//la direccion sera vertical
-        alignItems: "center",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center"
     },
     avatar: {
         margin: 8,
-        backgroundColor: "#69f0ae",
-        color: "black"
+        backgroundColor: "#e53935"
     },
     form: {
         width: "100%",
-        marginTop: 10,
+        marginTop: 10
     },
     submit: {
         marginTop: 15,
-        marginBotton: 20,
-    },
+        marginBottom: 20
+    }
 }
 
-const usuarioInicial = {//sirve para limpiar cada una de esas variables
+const usuarioInicial = {
     nombre: '',
     apellido: '',
     email: '',
@@ -33,6 +36,9 @@ const usuarioInicial = {//sirve para limpiar cada una de esas variables
 }
 
 class RegistrarUsuario extends Component {
+    //esto es para obtener el objeto dispatch, necesito usar contextProvider global
+    //el contentType es ahora al representancion  del contextProvider
+    static contextType = StateContext;
     state = {
         firebase: null,
         usuario: {
@@ -43,93 +49,66 @@ class RegistrarUsuario extends Component {
         }
     }
 
-    static getDerivedStateFromProps(nextProps, prepState) {
-        //si la siguiente propiedad firebase es identica al previoestado firebase  no ocurre nada
-        if (nextProps.firebase === prepState.firebase) {
+    static getDerivedStateFromProps(nextProps, prevState) {
+
+        if (nextProps.firebase === prevState.firebase) {
             return null;
         }
+
         return {
-            //si no es verdad necesito que ese valor que esta entrando se actualice dentro del estado de registrar usuario
-            //procedemos a cambiar el state del componente
             firebase: nextProps.firebase
         }
     }
 
+
     onChange = e => {
-        // agarre al actual usuario, y que a traves de ese usuario me clone el valor de ese usario y lo almacene en el variable usuario
-        let usuario = Object.assign({}, this.state.usuario)//clono el estado del usuario y lo almaceno en la variable let usuario
-        usuario[e.target.name] = e.target.value;//tomo el atributo name de la caja y le cargo el valor que se esta ingresando
+        let usuario = Object.assign({}, this.state.usuario);
+        usuario[e.target.name] = e.target.value;
         this.setState({
             usuario: usuario
         })
     }
 
-    //boton registrar
-    registrarUsuario = e => {
-        e.preventDefault();//no quiero que haga el refresh otra vez
-        console.log('imprimir objeto usuario del state', this.state.usuario)
-        //declaramos una const que permita obtener el valor de usuario y el valor firebase
-        const { usuario, firebase } = this.state;
-        //agrego un metodo para poder crear usuarios
-        firebase.auth
-            .createUserWithEmailAndPassword(usuario.email, usuario.password)
-            .then(auth => {//cuando de ok recien guardo
+    registrarUsuario = async e => {
+        e.preventDefault();
+        const [{ sesion }, dispatch] = this.context;
+        const { firebase, usuario } = this.state;
 
-                //creamos una constante que sera lo que mandaremos a la base de datos
-                const usuarioDB = {
-                    usuarioid: auth.user.uid,//auth.user.uid viene de firebase
-                    email: usuario.email,
-                    nombre: usuario.nombre,
-                    apellido: usuario.apellido
-                }
+        let callback = await crearUsuario(dispatch, firebase, usuario);
+        if (callback.status) {
+            this.props.history.push("/")
+        } else {
+            openMensajePantalla(dispatch, {
+                open: true,
+                mensaje: callback.mensaje.message
+            })
+        }
 
-                //llamo al objeto firebase y lo uso para poder insertar datos
-                firebase.db
-                    .collection("Users")
-                    .add(usuarioDB)
-                    .then(usuarioAfter => {
-                        console.log("Exito al insertar", usuarioAfter);
-                        this.props.history.push("/");
-                        // this.setState({
-                        //     usuario: usuarioInicial
-                        // })
-                    })
-                    .catch(error => {
-                        console.log("Error:", error);
-                    })
-            })
-            .catch(error => {
-                console.log(error)
-            })
     }
-
 
     render() {
         return (
             <Container maxWidth="md">
-                {/* en el div alineare los elementos en vertical */}
                 <div style={style.paper}>
                     <Avatar style={style.avatar}>
-                        <PermIdentityIcon />
+                        <LockOutLineIcon />
                     </Avatar>
                     <Typography component="h1" variant="h5">
-                        Registre su cuenta
+                        Registre su Cuenta
                     </Typography>
                     <form style={style.form}>
-                        {/* al crear un Grid de tipo container puedo distribuir los espacios de cada componente */}
                         <Grid container spacing={2}>
-                            {/* quiero que cuando sea un desktop ocupe la mitad del container */}
                             <Grid item md={6} xs={12}>
-                                <TextField name="nombre" onChange={this.onChange} fullWidth value={this.state.usuario.nombre} label="Ingrese su nombre"></TextField>
+                                <TextField name="nombre" onChange={this.onChange} value={this.state.usuario.nombre} fullWidth label="Ingrese su nombre" />
                             </Grid>
                             <Grid item md={6} xs={12}>
-                                <TextField name="apellido" onChange={this.onChange} fullWidth value={this.state.usuario.apellido} label="Ingrese su apellido"></TextField>
+                                <TextField name="apellido" onChange={this.onChange} value={this.state.usuario.apellido} fullWidth label="Ingrese sus apellidos" />
                             </Grid>
                             <Grid item md={6} xs={12}>
-                                <TextField name="email" onChange={this.onChange} fullWidth value={this.state.usuario.email} label="Ingrese su email"></TextField>
+                                <TextField name="email" onChange={this.onChange} value={this.state.usuario.email} fullWidth label="Ingrese su e-mail" />
                             </Grid>
                             <Grid item md={6} xs={12}>
-                                <TextField type="password" onChange={this.onChange} name="password" value={this.state.usuario.password} fullWidth label="Ingrese su password"></TextField>
+                                <TextField type="password" name="password" onChange={this.onChange} value={this.state.usuario.password} fullWidth label="Ingrese su password" />
                             </Grid>
                         </Grid>
                         <Grid container justify="center">
@@ -142,7 +121,7 @@ class RegistrarUsuario extends Component {
                     </form>
                 </div>
             </Container>
-        )
+        );
     }
 }
 

@@ -1,21 +1,19 @@
 const initialState = {
-    //cuando se habra el mensajito el reducer necesita pasarle dos parametros con contextProvider
-    //el primero es el estado(true, o false), el segundo parametro es el mensaje que aparecera
-    open: false,//por defecto estara cerrado
-    mensaje: ""//mensaje que mandare que por defecto estara vacio
-}
-//creacion dela funcion reducer
+    open: false,//por defecto el popup no es visible, es decir esta cerrado
+    mensaje: ""//y su mensaje estara vacio
+};
+
 const openSnackbarReducer = (state = initialState, action) => {
     switch (action.type) {
-        case "OPEN_SNACKBAR":
+        case "OPEN_SNACKBAR"://esta es la accion que redibira de snackbarAction.js linea 3
             return {
-                ...state,//retorno el estado actual
-                open: action.openMensaje.open,//openMensaje debo crearlo, open es el estado
-                mensaje: action.openMensaje.mensaje//mensaje es el contenido
+                ...state,//retornara el estado actual
+                open: action.openMensaje.open,//openMensajes es un json que estara dentro de action
+                mensaje: action.openMensaje.mensaje
             };
         default:
             return state;
-    };
+    }
 };
 
-export default openSnackbarReducer
+export default openSnackbarReducer;

@@ -1,8 +1,13 @@
-import React, { Component } from 'react'
-import { Container, Avatar, Typography, TextField, Button } from '@material-ui/core'
-import LockOutlineIcon from '@material-ui/icons/LockOutlined';
+import React, { Component } from 'react';
+import { Container, Avatar, Typography, TextField, Button, Grid, Link } from '@material-ui/core';
+import LockOutlineIcon from "@material-ui/icons/LockOutlined";
 import { compose } from 'recompose';
-import { consumerFirebase } from '../../server'
+import { consumerFirebase } from '../../server';
+import { iniciarSesion } from '../../sesion/actions/sesionAction';//importo el action
+import { openMensajePantalla } from '../../sesion/actions/snackbarAction';
+
+import { StateContext } from '../../sesion/store';
+
 const style = {
     paper: {
         marginTop: 9,
@@ -16,57 +21,87 @@ const style = {
     },
     form: {
         width: "100%",
-        marginTop: 8,
-
+        marginTop: 8
+    },
+    submit: {
+        marginTop: 10,
+        marginBottom: 20
     }
+
 }
 
 
 class Login extends Component {
+    //esto es para obtener el objeto dispatch, necesito usar contextProvider global
+    //el contentType es ahora al representancion  del contextProvider
+    static contextType = StateContext;
+
     state = {
         firebase: null,
         usuario: {
-            email: "",
-            password: ""
+            email: '',
+            password: ''
         }
     }
 
     static getDerivedStateFromProps(nextProps, prevState) {
-        //si la variable firebase base esta ingresando como un props dentro de mi componente entonces
-        //es decir si son identicas no haga nada
+
         if (nextProps.firebase === prevState.firebase) {
-            return null
+            return null;
         }
+
         return {
             firebase: nextProps.firebase
         }
     }
 
     onChange = e => {
-        //capturamos el valor actual del state del usurio
-        let usuario = Object.assign({}, this.state.usuario)
-        usuario[e.target.name] = e.target.value//capturamos el valor que el usuario ingresa en las cajas de texto
+        let usuario = Object.assign({}, this.state.usuario);
+        usuario[e.target.name] = e.target.value;
         this.setState({
             usuario: usuario
         })
     }
 
-    login = e => {
-        e.preventDefault()//para que no haga el envio total
-        //defino las constantes del state
-        const { firebase, usuario } = this.state
-        //llamo a firebase para hacer el metodo de autenticacion
-        firebase.auth
-            .signInWithEmailAndPassword(usuario.email, usuario.password)//metodo de firebase para ingresar con email y password
-            .then(auth => {
-                console.log("Exito logeo: ", auth);
-                //si accede quiero que me lleve a una pagina de listaInmueble
-                //para eso debo hacer un redirect
-                this.props.history.push('/')//este es el path definido en App.js
+    login = async e => {//el action es el que tiene la logica para hacer todo esto
+        e.preventDefault();//para evitar que se refresque
+        const [{ sesion }, dispatch] = this.context;//aqui llamo al action, que son funcion exportables
+        const { firebase, usuario } = this.state;
+        const { email, password } = usuario;
+        //le pasamos los parametros que necesita iniciarSesion que es un metodo de la action
+        //esto es un proceso que invoca un servicio, tiene un tiempo de espera, por ello es un proceso asincrono
+        let callback = await iniciarSesion(dispatch, firebase, email, password);//await es para que espere a que termine de ejecutarse
+        //cuando se inicia sesion el proceso puede dar error o no, por lo tanto hacemos un callback a esa respuesta
+        console.log(callback);
+        if (callback.status) {//este status esta en resolve de sesionAction.js  linea 20
+            this.props.history.push("/");//y redirecciono a la pagina principal
+        } else {
+            openMensajePantalla(dispatch, {//si hubo error, entonces llamara al metodo openMensajePantalla
+                open: true,//abrimos el popup
+                mensaje: callback.mensaje.message//y le mandamos el mensaje
+            })
+        }
+
+    }
+
+    resetearPassword = () => {
+        const { firebase, usuario } = this.state;
+        const [{ sesion }, dispatch] = this.context;
+
+        firebase.auth.sendPasswordResetEmail(usuario.email)
+            .then(success => {
+                openMensajePantalla(dispatch, {
+                    open: true,
+                    mensaje: "Se ha enviado un correo electronico a tu cuenta"
+                })
             })
             .catch(error => {
-                console.log("Error Logeo:", error);
+                openMensajePantalla(dispatch, {
+                    open: true,
+                    mensaje: error.message
+                })
             })
+
     }
 
 
@@ -76,15 +111,14 @@ class Login extends Component {
                 <div style={style.paper}>
                     <Avatar style={style.avatar}>
                         <LockOutlineIcon />
-                        {/* <PermIdentityIcon /> */}
                     </Avatar>
                     <Typography component="h1" variant="h5">
-                        Ingrese usuario
+                        Ingrese Usuario
                     </Typography>
-                    <form styl={style.form}>
+                    <form style={style.form}>
                         <TextField
-                            variant="outlined"//borde
-                            label="Email"
+                            variant="outlined"
+                            label="E=Mail"
                             name="email"
                             fullWidth
                             margin="normal"
@@ -92,10 +126,10 @@ class Login extends Component {
                             value={this.state.usuario.email}
                         />
                         <TextField
-                            variant="outlined"//borde
+                            variant="outlined"
                             label="Password"
-                            name="password"
                             type="password"
+                            name="password"
                             fullWidth
                             margin="normal"
                             onChange={this.onChange}
@@ -104,17 +138,48 @@ class Login extends Component {
                         <Button
                             type="submit"
                             fullWidth
-                            variant="contained"//le da un color de fondo
+                            variant="contained"
                             color="primary"
                             onClick={this.login}
+                            style={style.submit}
                         >
                             Enviar
-                        </Button>
+                         </Button>
+
+                        {/* <Grid container>
+                            <Grid item xs>
+                                <Link href="#" variant="body2" onClick={this.resetearPassword}>
+                                    {"Olvido su contrasena?"}
+                                </Link>
+                            </Grid>
+
+                            <Grid item>
+                                <Link href="/auth/registrarUsuario" variant="body2">
+                                    {"No tienes cuenta? Registrate"}
+                                </Link>
+                            </Grid>
+
+
+
+
+
+                        </Grid> */}
                     </form>
+
+                    {/* <Button
+                        fullWidth
+                        variant="contained"
+                        color="primary"
+                        style={style.submit}
+                        href="/auth/loginTelefono"
+                    >
+                        Ingrese con su telefono
+                    </Button> */}
+
                 </div>
             </Container>
-        )
+        );
     }
 }
 
-export default compose(consumerFirebase)(Login)
+export default compose(consumerFirebase)(Login);
